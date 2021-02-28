@@ -21,7 +21,7 @@ public class RobotControl : MonoBehaviour
     private float nextHeartbeat = 0.0f;
 
     private Socket gameSocket;
-    private byte[] udpData = { 81, 12, 0, 0, 0, 0, 0, 0 };
+    private byte[] udpData = { 81, 12, 0, 0, 0, 0, 0, 0, 0, 0 };
     private bool lightOn = false;
 
 
@@ -44,12 +44,17 @@ public class RobotControl : MonoBehaviour
     {
         if (nextHeartbeat < Time.time)
         {
-            float yValue = CrossPlatformInputManager.GetAxis("Vertical") * 100.0f;
-            float xValue = CrossPlatformInputManager.GetAxis("Horizontal") * 100.0f;
+            //float yValue = CrossPlatformInputManager.GetAxis("Vertical") * 100.0f;
+            //float xValue = CrossPlatformInputManager.GetAxis("Horizontal") * 100.0f;
+            float yValue = GetComponent<InstantJoystick>().vertical_left * 100.0f;
+            float xValue = GetComponent<InstantJoystick>().horizontal_left * 100.0f;
+            float slide = GetComponent<InstantJoystick>().horizontal_right * 100.0f;
             byte yByte = (byte)Mathf.Abs(yValue);
             byte yDir = 0;
             byte xByte = (byte)Mathf.Abs(xValue);
             byte xDir = 0;
+            byte slideByte = (byte)Mathf.Abs(slide);
+            byte slideDir = 0;
             if (yValue < 0)
             {
                 yDir = 0x01;
@@ -58,10 +63,16 @@ public class RobotControl : MonoBehaviour
             {
                 xDir = 0x01;
             }
+            if (slide < 0)
+            {
+                slideDir = 0x01;
+            }
             udpData[2] = xByte;
             udpData[3] = xDir;
             udpData[4] = yByte;
             udpData[5] = yDir;
+            udpData[6] = slideByte;
+            udpData[7] = slideDir;
             SendData(gameSocket, udpData, ipAddress, 6789);
             nextHeartbeat = Time.time + 0.2f;
         }
@@ -72,11 +83,11 @@ public class RobotControl : MonoBehaviour
         lightOn = !lightOn;
         if (lightOn)
         {
-            udpData[6] = 1;
+            udpData[8] = 1;
         }
         else
         {
-            udpData[6] = 0;
+            udpData[8] = 0;
         }
     }
 
